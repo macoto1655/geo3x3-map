@@ -107,10 +107,17 @@ window.onload = function() {
 	const moveZone = function(map, zone) {
 		const pos = Geo3x3.decode(zone);
 //		map.setCenter(new google.maps.LatLng(pos.lat, pos.lng));
-		map.fitBounds(new google.maps.LatLngBounds(
-			new google.maps.LatLng(pos.lat - pos.unit / 2, pos.lng - pos.unit / 2),
-			new google.maps.LatLng(pos.lat + pos.unit / 2, pos.lng + pos.unit / 2)
-		));
+		//console.log(pos)
+		if (pos.lat < 80 && pos.lat > -80) {
+			if (pos.unit < 60) {
+				map.fitBounds(new google.maps.LatLngBounds(
+					new google.maps.LatLng(pos.lat - pos.unit / 2, pos.lng - pos.unit / 2),
+					new google.maps.LatLng(pos.lat + pos.unit / 2, pos.lng + pos.unit / 2)
+				));
+			} else {
+				map.setCenter(new google.maps.LatLng(pos.lat, pos.lng));
+			}
+		}
 		latlng.value = pos.lat + "," + pos.lng;
 	}
 	google.maps.event.addListener(map, 	'zoom_changed', function(evt) {
@@ -145,8 +152,28 @@ window.onload = function() {
 			bkpolygon = drawZonePolygon(map, zone);
 		}
 	});
-	output.onkeyup = function(e) {
+	document.body.onkeyup = function(e) {
 		const key = e.keyCode;
+		if (e.target != output) {
+			let c = e.key;
+			if (c == "Backspace") {
+				if (output.value.length > 0) {
+					output.value = output.value.substring(0, output.value.length - 1);
+				}
+				c = 0;
+			}
+			if (c == "+" || c == "E" || c == "e") {
+				c = "E";
+			} else if (c == "-" || c == "W" || c == "w") {
+				c = "W";
+			} else if (c >= '1' && c <= '9') {
+			} else {
+				c = 0;
+			}
+			if (c) {
+				output.value += c;
+			}
+		}
 		if (true) { // key == 13) {
 			const zone = output.value;
 			if (zone.length) {
@@ -158,7 +185,7 @@ window.onload = function() {
 				save();
 			}
 		}
-		outputlv.textContent = this.value.length;
+		outputlv.textContent = output.value.length;
 	};
 	const load = function() {
 		let s = document.location.hash;
