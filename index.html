@@ -104,18 +104,20 @@ window.onload = function() {
 		p.zone = zone;
 		return p;
 	};
-	const moveZone = function(map, zone) {
+	const moveZone = function(map, zone, zoom) {
 		const pos = Geo3x3.decode(zone);
 //		map.setCenter(new google.maps.LatLng(pos.lat, pos.lng));
 		//console.log(pos)
+		console.log(zone, zoom)
 		if (pos.lat < 80 && pos.lat > -80) {
-			if (pos.unit < 60) {
+			if (pos.unit < 60 && !zoom) {
 				map.fitBounds(new google.maps.LatLngBounds(
 					new google.maps.LatLng(pos.lat - pos.unit / 2, pos.lng - pos.unit / 2),
 					new google.maps.LatLng(pos.lat + pos.unit / 2, pos.lng + pos.unit / 2)
 				));
 			} else {
 				map.setCenter(new google.maps.LatLng(pos.lat, pos.lng));
+				map.setZoom(zoom);
 			}
 		}
 		latlng.value = pos.lat + "," + pos.lng;
@@ -154,11 +156,13 @@ window.onload = function() {
 	});
 	document.body.onkeyup = function(e) {
 		const key = e.keyCode;
+		let flg = false;
 		if (e.target != output) {
 			let c = e.key;
 			if (c == "Backspace") {
 				if (output.value.length > 0) {
 					output.value = output.value.substring(0, output.value.length - 1);
+					flg = true;
 				}
 				c = 0;
 			}
@@ -171,10 +175,13 @@ window.onload = function() {
 				c = 0;
 			}
 			if (c) {
+				flg = true;
 				output.value += c;
 			}
+		} else {
+			flg = true;
 		}
-		if (true) { // key == 13) {
+		if (flg) {
 			const zone = output.value;
 			if (zone.length) {
 				if (bkpolygon) {
@@ -194,18 +201,24 @@ window.onload = function() {
 		} else {
 			s = "E913";
 		}
+		let zoom = 0;
+		let n = s.lastIndexOf(",");
+		if (n >= 0) {
+			zoom = parseInt(s.substring(n + 1));
+			s = s.substring(0, n);
+		}
 		const pos = Geo3x3.decode(s);
 		if (pos != null) {
 			output.value = s;
 			bkpolygon = drawZonePolygon(map, s);
-			moveZone(map, s);
+			moveZone(map, s, zoom);
 			return true;
 		}
 		return false;
 	};
 	const save = function() {
 		const s = output.value;
-		document.location.replace("#" + s);
+		//document.location.replace("#" + s);
 	};
 	load();
 	
